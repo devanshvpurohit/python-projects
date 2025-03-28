@@ -78,7 +78,7 @@ def admin_panel():
             data["questions"].append({"question": question, "options": options, "answer": answer})
             save_quiz_data(data)
             st.success("Question added!")
-            st.experimental_rerun()
+            st.rerun()
     
     st.subheader("Existing Questions")
     for idx, q in enumerate(data["questions"]):
