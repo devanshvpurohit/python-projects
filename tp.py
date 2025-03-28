@@ -3,14 +3,25 @@ import json
 import os
 
 data_file = "quizee_data.json"
+quiz_file = "quiz_data.json"
 
 def load_quiz_data():
+    if not os.path.exists(quiz_file):
+        return {"questions": []}
+    with open(quiz_file, "r") as file:
+        return json.load(file)
     if not os.path.exists(data_file):
         return {"questions": [], "leaderboard": {}, "users": {}}
     with open(data_file, "r") as file:
         return json.load(file)
 
-def save_quiz_data(data):
+def load_user_data():
+    if not os.path.exists(data_file):
+        return {"leaderboard": {}, "users": {}}
+    with open(data_file, "r") as file:
+        return json.load(file)
+
+def save_user_data(data):
     with open(data_file, "w") as file:
         json.dump(data, file, indent=4)
 
@@ -41,7 +52,8 @@ def login():
             st.error("Username and password are required.")
 
 def quiz():
-    data = load_quiz_data()
+    quiz_data = load_quiz_data()
+    data = load_user_data()
     st.title("Class Quiz")
     username = st.session_state["user"]
     
@@ -49,7 +61,7 @@ def quiz():
         data["leaderboard"][username] = 0
     
     score = 0
-    for q in data["questions"]:
+    for q in quiz_data["questions"]:
         answer = st.radio(q["question"], q["options"], key=q["question"])
         if st.button("Submit Answer", key=f"submit_{q['question']}"):
             if answer == q["answer"]:
@@ -65,6 +77,38 @@ def quiz():
         st.rerun()
 
 def admin_panel():
+    user_data = load_user_data()
+    quiz_data = load_quiz_data()
+    st.title("Admin Panel")
+    st.subheader("Manage Questions")
+    
+    question = st.text_input("Enter Question")
+    options = st.text_area("Enter Options (comma-separated)").split(",")
+    answer = st.text_input("Enter Correct Answer")
+    
+    if st.button("Add Question"):
+        if question and options and answer:
+            quiz_data["questions"].append({"question": question, "options": options, "answer": answer})
+            save_quiz_data(quiz_data)
+            st.success("Question added!")
+            st.rerun()
+    
+    st.subheader("Existing Questions")
+    for idx, q in enumerate(quiz_data["questions"]):
+        st.write(f"{idx+1}. {q['question']}")
+        if st.button(f"Remove {idx+1}"):
+            del quiz_data["questions"][idx]
+            save_quiz_data(quiz_data)
+            st.rerun()
+    
+    st.subheader("Leaderboard & Score Management")
+    for user, score in user_data["leaderboard"].items():
+        new_score = st.number_input(f"{user}: {score} points", min_value=0, value=score, key=user)
+        if st.button(f"Update {user} Score", key=f"update_{user}"):
+            user_data["leaderboard"][user] = new_score
+            save_user_data(user_data)
+            st.success(f"Updated {user}'s score to {new_score}")
+            st.rerun()
     data = load_quiz_data()
     st.title("Admin Panel")
     st.subheader("Manage Questions")
@@ -78,7 +122,7 @@ def admin_panel():
             data["questions"].append({"question": question, "options": options, "answer": answer})
             save_quiz_data(data)
             st.success("Question added!")
-            st.rerun()
+            st.experimental_rerun()
     
     st.subheader("Existing Questions")
     for idx, q in enumerate(data["questions"]):
@@ -94,6 +138,9 @@ def admin_panel():
 
 def main():
     if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+        st.session_state["user"] = None
+        st.session_state["admin"] = False
         login()
     else:
         if st.session_state["admin"]:
