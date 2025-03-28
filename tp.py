@@ -62,7 +62,7 @@ def quiz():
         data["leaderboard"][username] += score
         save_quiz_data(data)
         st.success(f"Your score: {score}")
-        st.experimental_rerun()
+        st.rerun()
 
 def admin_panel():
     data = load_quiz_data()
