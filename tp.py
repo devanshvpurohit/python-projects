@@ -47,7 +47,7 @@ if 'leaderboard' not in st.session_state:
     st.session_state.leaderboard = []
 
 def login():
-    users = {"admin": {"password": "adminpass", "role": "admin"}, "user1": {"password": "quiz2024", "role": "user"}}  # Sample user database
+    users = {"admin": {"password": "ECELL BEST IN IARE", "role": "admin"}}  # Admin password updated
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
@@ -55,6 +55,11 @@ def login():
             st.session_state.authenticated = True
             st.session_state.username = username
             st.session_state.role = users[username]['role']
+            st.experimental_rerun()
+        elif username == password:
+            st.session_state.authenticated = True
+            st.session_state.username = username
+            st.session_state.role = "user"
             st.experimental_rerun()
         else:
             st.error("Invalid username or password")
