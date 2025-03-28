@@ -45,6 +45,8 @@ if 'role' not in st.session_state:
     st.session_state.role = None
 if 'leaderboard' not in st.session_state:
     st.session_state.leaderboard = []
+if 'rerun' not in st.session_state:
+    st.session_state.rerun = False
 
 def login():
     users = {"admin": {"password": "ECELL BEST IN IARE", "role": "admin"}}  # Admin password updated
@@ -55,12 +57,12 @@ def login():
             st.session_state.authenticated = True
             st.session_state.username = username
             st.session_state.role = users[username]['role']
-            st.experimental_rerun()
+            st.session_state.rerun = True
         elif username == password:
             st.session_state.authenticated = True
             st.session_state.username = username
             st.session_state.role = "user"
-            st.experimental_rerun()
+            st.session_state.rerun = True
         else:
             st.error("Invalid username or password")
 
@@ -68,6 +70,10 @@ def logout():
     st.session_state.authenticated = False
     st.session_state.username = None
     st.session_state.role = None
+    st.session_state.rerun = True
+
+if st.session_state.rerun:
+    st.session_state.rerun = False
     st.experimental_rerun()
 
 if not st.session_state.authenticated:
@@ -115,7 +121,6 @@ else:
             with open('content/quiz_data.json', 'w', encoding='utf-8') as f:
                 json.dump(quiz_data, f, indent=4)
             st.success("Question added successfully!")
-            st.experimental_rerun()
     
     def remove_question():
         question_to_remove = st.selectbox("Select a question to remove:", [q['question'] for q in quiz_data])
@@ -124,7 +129,6 @@ else:
             with open('content/quiz_data.json', 'w', encoding='utf-8') as f:
                 json.dump(quiz_data, f, indent=4)
             st.success("Question removed successfully!")
-            st.experimental_rerun()
     
     # Logout Button
     st.sidebar.button("Logout", on_click=logout)
