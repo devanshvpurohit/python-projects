@@ -34,7 +34,7 @@ def login():
                     st.session_state["admin"] = False
                 st.session_state["user"] = username
                 st.session_state["logged_in"] = True
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Invalid password.")
         else:
